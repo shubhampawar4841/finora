@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from 'next/font/google'
 import { AppSidebar } from "@/components/app-sidebar"
+import { AppHeader } from "@/components/app-header"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -18,7 +19,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <div className="flex h-screen">
+     
           <AppSidebar />
+          <AppHeader />
           <main className="flex-1 overflow-y-auto">
             {children}
           </main>
