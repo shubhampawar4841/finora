@@ -2,7 +2,7 @@
 import React from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Clock, Send, Square } from "lucide-react";
+import { Clock, Send, Flag } from "lucide-react";
 import { useUser ,  UserButton } from '@clerk/nextjs';
 
 export function AppHeader(){
@@ -36,7 +36,7 @@ export function AppHeader(){
             <Send className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon">
-            <Square className="h-4 w-4" />
+            <Flag className="h-4 w-4" />
           </Button>
           {user && (
             <>

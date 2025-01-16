@@ -12,11 +12,7 @@ export default function Dashboard() {
       <header className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="flex items-center space-x-2">
-          {user && (
-            <>
-             <UserButton />
-            </>
-          )}
+
         </div>
       </header>
       {user && (

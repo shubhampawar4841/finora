@@ -18,16 +18,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex h-screen">
-     
-          <AppSidebar />
+        <div className="flex flex-col h-screen">
           <AppHeader />
-          <main className="flex-1 overflow-y-auto">
-            {children}
-          </main>
+          <div className="flex flex-1 overflow-hidden">
+            <AppSidebar />
+            <main className="flex-1">
+              <div>
+                {children}
+              </div>
+            </main>
+          </div>
         </div>
       </body>
     </html>
-  )
+  );
 }
 
