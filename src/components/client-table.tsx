@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { ArrowUpDown, Mail, Phone, Info } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import {ScrollArea} from "@/components/ui/scroll-area"
+import {Switch} from "@/components/ui/switch"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,13 +22,13 @@ import {
 } from "@/components/ui/table"
 import { ClientTableSkeleton } from "./skeleton/client-table-skeleton"
 import { dummyClients, relationshipManagers, riskProfiles, plans } from "../lib/dummydata"
-import { Client, SortDirection, SortField } from "./types"
+import { Client, SortDirection, SortField } from "../lib/types"
 
 export default function ClientTable() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [sortField, setSortField] = useState<SortField | null>(null)
-  const [sortDirection, setSortDirection] = useState<SortDirection>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection | null>(null)
   const [excludeInactive, setExcludeInactive] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedRMs, setSelectedRMs] = useState<string[]>([])
@@ -109,7 +110,7 @@ export default function ClientTable() {
 
         <div className="ml-auto flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Checkbox
+            <Switch
               id="excludeInactive"
               checked={excludeInactive}
               onCheckedChange={(checked) => setExcludeInactive(checked as boolean)}
@@ -127,8 +128,9 @@ export default function ClientTable() {
       </div>
 
       <div className="rounded-md border">
+        <ScrollArea className=" h-[80vh] rounded-md border">
         <Table>
-          <TableHeader>
+          <TableHeader className="">
             <TableRow>
               <TableHead onClick={() => handleSort('name')} className="cursor-pointer">
                 Client {sortField === 'name' && <ArrowUpDown className="ml-2 h-4 w-4 inline" />}
@@ -211,6 +213,7 @@ export default function ClientTable() {
             )}
           </TableBody>
         </Table>
+        </ScrollArea>
       </div>
     </div>
   )

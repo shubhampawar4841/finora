@@ -23,3 +23,12 @@ export interface Client {
     id: number;
     name: string;
   }
+
+  export interface SortDirection {
+    direction: 'asc' | 'desc' | null;
+  }
+
+  export interface SortField {
+    field: 'name' | 'days_to_renewal' | 'rm_name' | 'risk_profile' | 'plan_name' | null;
+  }
+  
