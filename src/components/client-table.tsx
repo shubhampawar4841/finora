@@ -23,6 +23,7 @@ import {
 import { ClientTableSkeleton } from "./skeleton/client-table-skeleton"
 import { dummyClients, relationshipManagers, riskProfiles, plans } from "../lib/dummydata"
 import { Client, SortDirection, SortField } from "../lib/types"
+import {levenshtein} from '@/lib/utils'
 
 export default function ClientTable() {
   const [clients, setClients] = useState<Client[]>([])
@@ -52,11 +53,12 @@ export default function ClientTable() {
       setSortDirection('asc')
     }
   }
-
+  const MAX_DISTANCE = 3; 
   const filteredClients = clients
     .filter(client => {
       if (excludeInactive && client.status === 'inactive') return false
       if (searchTerm && !client.name.toLowerCase().includes(searchTerm.toLowerCase())) return false
+      //if (searchTerm && levenshtein(client.name.toLowerCase(), searchTerm.toLowerCase()) > MAX_DISTANCE) return false
       if (selectedRiskProfile !== "All Risk Profiles" && client.risk_profile !== selectedRiskProfile) return false
       if (selectedPlan !== "All Plans" && client.plan_name !== selectedPlan) return false
       if (selectedRMs.length > 0 && !selectedRMs.includes(client.rm_name)) return false
