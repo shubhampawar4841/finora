@@ -6,6 +6,7 @@ import { useClerk, SignInButton, useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ChevronRight, BarChart2, MessageCircle, Users, Database, Bot } from 'lucide-react'
+import { Waitlist } from '@clerk/nextjs'
 
 export default function LandingPage() {
   const { user } = useUser()
@@ -53,7 +54,7 @@ export default function LandingPage() {
         >
           <h1 className="text-4xl font-bold">Empower Your Financial Analysis with Fino AI</h1>
           <p className="text-lg">The all-in-one tool for research analysts and investment advisors.</p>
-          <div className="flex space-x-2">
+          {/* <div className="flex space-x-2">
             <Input
               type="email"
               placeholder="Enter your email"
@@ -65,7 +66,8 @@ export default function LandingPage() {
               Join Waitlist
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
-          </div>
+          </div> */}
+          <Waitlist />
         </motion.div>
 
         <motion.div
