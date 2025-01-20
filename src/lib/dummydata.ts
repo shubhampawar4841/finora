@@ -3,7 +3,7 @@ import { Client } from './types'
 export const dummyClients: Client[] = [
   {
     client_id: 1,
-    name: "Very long user name that needs truncation",
+    full_name: "Very long user name that needs truncation",
     email: "user1@example.com",
     phone: "+1234567890",
     kyc_status: "verified",

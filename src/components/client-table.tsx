@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ArrowUpDown, Mail, Phone, Info } from 'lucide-react'
+import { ArrowUpDown, Mail, Phone, Info, Upload, UserPlus, PlusCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {ScrollArea} from "@/components/ui/scroll-area"
 import {Switch} from "@/components/ui/switch"
+import CSVUpload from "@/components/add-clients"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,12 @@ import { ClientTableSkeleton } from "./skeleton/client-table-skeleton"
 import { dummyClients, relationshipManagers, riskProfiles, plans } from "../lib/dummydata"
 import { Client, SortDirection, SortField } from "../lib/types"
 import {levenshtein} from '@/lib/utils'
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+
+// New Client Form Component
+const AddClientForm = ({ onClose }: { onClose: () => void }) => {
+  // ... existing form code ...
+}
 
 export default function ClientTable() {
   const [clients, setClients] = useState<Client[]>([])
@@ -35,6 +42,8 @@ export default function ClientTable() {
   const [selectedRMs, setSelectedRMs] = useState<string[]>([])
   const [selectedRiskProfile, setSelectedRiskProfile] = useState<string>("All Risk Profiles")
   const [selectedPlan, setSelectedPlan] = useState<string>("All Plans")
+  const [showAddClientDialog, setShowAddClientDialog] = useState(false)
+  const [showCSVDialog, setShowCSVDialog] = useState(false)
 
   useEffect(() => {
     // Simulate API call
@@ -71,6 +80,7 @@ export default function ClientTable() {
       return 0
     })
 
+
   return (
     <div className="w-full">
       <div className="flex items-center gap-4 mb-4">
@@ -103,6 +113,31 @@ export default function ClientTable() {
                 {profile}
               </DropdownMenuItem>
             ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="text-primary">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Client
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setShowAddClientDialog(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              <div className="flex flex-col">
+                <span>Insert Client</span>
+                <span className="text-xs text-muted-foreground">Insert client details</span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowCSVDialog(true)}>
+              <Upload className="mr-2 h-4 w-4" />
+              <div className="flex flex-col">
+                <span>Import Data from CSV</span>
+                <span className="text-xs text-muted-foreground">Insert new clients from CSV</span>
+              </div>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -158,7 +193,7 @@ export default function ClientTable() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                        {client.name.charAt(0)}
+                        {client.name}
                       </div>
                       <div>
                         <div className="font-medium truncate max-w-[200px]">{client.name}</div>
@@ -217,7 +252,34 @@ export default function ClientTable() {
         </Table>
         </ScrollArea>
       </div>
+
+      {/* Add Client Form Dialog */}
+      <Dialog open={showAddClientDialog} onOpenChange={setShowAddClientDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Client</DialogTitle>
+            <DialogDescription>
+              Enter the client's details below
+            </DialogDescription>
+          </DialogHeader>
+          <AddClientForm onClose={() => setShowAddClientDialog(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* CSV Import Dialog */}
+      <Dialog open={showCSVDialog} onOpenChange={setShowCSVDialog}>
+        <DialogContent className="sm:max-w-[33vw] absolute right-0 h-full">
+          <DialogHeader>
+            <DialogTitle>Import Clients from CSV</DialogTitle>
+            <DialogDescription>
+              Upload a CSV file containing client data
+            </DialogDescription>
+          </DialogHeader>
+          <CSVUpload />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
+
 
