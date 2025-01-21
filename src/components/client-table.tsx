@@ -268,7 +268,7 @@ export default function ClientTable() {
 
       {/* CSV Import Dialog */}
       <Dialog open={showCSVDialog} onOpenChange={setShowCSVDialog}>
-        <DialogContent className="sm:max-w-[33vw] absolute right-0 h-full">
+        <DialogContent side="right" className="sm:max-w-[33vw] absolute right-0 h-full">
           <DialogHeader>
             <DialogTitle>Import Clients from CSV</DialogTitle>
             <DialogDescription>

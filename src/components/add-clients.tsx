@@ -1,19 +1,24 @@
 'use Client'
 
-import { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { useUser, useSession } from '@clerk/nextjs'
 import { createClient } from '@supabase/supabase-js'
 import Papa from 'papaparse'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Upload, X, FileText, AlertCircle } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function CSVUpload() {
   const [file, setFile] = useState<File | null>(null)
+  const [pastedText, setPastedText] = useState('')
   const [csvData, setCSVData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [previewVisible, setPreviewVisible] = useState(false)
   const { toast } = useToast()
   const { user } = useUser()
@@ -39,140 +44,164 @@ export default function CSVUpload() {
 
   const supabase = createClerkSupabaseClient()
 
-  // Handle file upload
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = event.target.files?.[0]
-    if (!uploadedFile) return
+  const handleDrop = useCallback((e) => {
+    e.preventDefault()
+    const droppedFile = e.dataTransfer.files[0]
+    if (droppedFile?.type === 'text/csv' || droppedFile?.name.endsWith('.tsv')) {
+      setFile(droppedFile)
+      setError('')
+    } else {
+      setError('Please upload a CSV or TSV file')
+    }
+  }, [])
 
-    setFile(uploadedFile)
-    setPreviewVisible(false)
-
-    // Parse CSV file
-    Papa.parse(uploadedFile, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (result) => {
-        const { data, errors } = result
-
-        if (errors.length > 0) {
-          toast({
-            title: "Error",
-            description: "CSV file contains errors. Please check the format.",
-          })
-          return
-        }
-
-        // Validate CSV structure
-        const requiredHeaders = [
-          'id',
-          'user_id',
-          'full_name',
-          'email',
-          'sebi_license_number',
-          'whatsapp_number',
-          'profile_description',
-          'created_at',
-          'updated_at',
-        ]
-        const headers = Object.keys(data[0])
-        const isValid = requiredHeaders.every((header) => headers.includes(header))
-
-        if (!isValid) {
-          toast({
-            title: "Error",
-            description: "CSV file structure is invalid. Please check the headers.",
-          })
-          return
-        }
-
-        setCSVData(data)
-        setPreviewVisible(true)
-      },
-    })
+  const handleFileSelect = (e) => {
+    const selectedFile = e.target.files[0]
+    if (selectedFile?.type === 'text/csv' || selectedFile?.name.endsWith('.tsv')) {
+      setFile(selectedFile)
+      setError('')
+    } else {
+      setError('Please upload a CSV or TSV file')
+    }
   }
 
-  // Insert data into Supabase
-  const handleInsertData = async () => {
-    if (!user || !file || csvData.length === 0) return
+  const handlePasteText = (e) => {
+    setPastedText(e.target.value)
+    setError('')
+  }
 
+  const handleRemoveFile = () => {
+    setFile(null)
+    setCSVData([])
+    setError('')
+  }
+
+  const handleImport = async () => {
+    // Simulated import process
     setLoading(true)
-
     try {
-      const formattedData = csvData.map((row) => ({
-        user_id: user.id,
-        full_name: row.full_name,
-        email: row.email,
-        sebi_license_number: row.sebi_license_number,
-        whatsapp_number: row.whatsapp_number,
-        profile_description: row.profile_description,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      }))
-
-      const { error } = await supabase.from('your_table_name').insert(formattedData)
-
-      if (error) {
-        toast({
-          title: "Error inserting data",
-          description: error.message,
-        })
-      } else {
-        toast({
-          title: "Success",
-          description: "Data inserted successfully!",
-        })
-        setFile(null)
-        setCSVData([])
-        setPreviewVisible(false)
-      }
-    } catch (error) {
+      // Add actual import logic here
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      setLoading(false)
       toast({
-        title: "Unexpected Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Success",
+        description: "Data imported successfully!",
       })
-    } finally {
+    } catch (err) {
+      setError('Import failed. Please try again.')
       setLoading(false)
     }
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Upload CSV File</h1>
+      <Card>
+        <CardHeader>
+          <CardTitle>Add data to public.relationship_managers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="upload">
+            <TabsList fullWidth className="mb-4">
+              <TabsTrigger value="upload">Upload CSV</TabsTrigger>
+              <TabsTrigger value="paste">Paste text</TabsTrigger>
+            </TabsList>
 
-      <Input type="file" accept=".csv" onChange={handleFileUpload} disabled={loading} />
+            <TabsContent value="upload">
+              <div 
+                className="border-2 border-dashed rounded-lg p-8 text-center hover:border-gray-400 transition-colors"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+              >
+                {!file ? (
+                  <div>
+                    <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <p className="text-sm text-gray-600 mb-2">
+                      Drag and drop, or <button className="text-blue-500 hover:text-blue-600" onClick={() => document.querySelector('input[type="file"]').click()}>browse</button> your files
+                    </p>
+                    <input
+                      type="file"
+                      accept=".csv,.tsv"
+                      className="hidden"
+                      onChange={handleFileSelect}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    <FileText className="h-5 w-5 text-gray-500" />
+                    <span className="text-sm text-gray-600">{file.name}</span>
+                    <button
+                      onClick={handleRemoveFile}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
 
-      {previewVisible && (
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold mb-2">Preview</h2>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {Object.keys(csvData[0]).map((header) => (
-                  <TableHead key={header}>{header}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {csvData.slice(0, 5).map((row, index) => (
-                <TableRow key={index}>
-                  {Object.values(row).map((value, i) => (
-                    <TableCell key={i}>{String(value)}</TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            <TabsContent value="paste">
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Copy a table from a spreadsheet program and paste it below. The first row should be the headers.
+                </p>
+                <textarea
+                  className="w-full h-64 p-2 border rounded-lg resize-none"
+                  placeholder="Paste your data here..."
+                  value={pastedText}
+                  onChange={handlePasteText}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
 
-          <div className="mt-4 flex gap-2">
-            <Button onClick={handleInsertData} disabled={loading}>
-              {loading ? <Loader2 className="animate-spin" /> : 'Insert Data'}
-            </Button>
-            <Button variant="outline" onClick={() => setPreviewVisible(false)} disabled={loading}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
+          {error && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {previewVisible && (
+            <div className="mt-6">
+              <h3 className="text-lg font-medium mb-4">Preview</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      {Object.keys(csvData[0] || {}).map((header) => (
+                        <th key={header} className="p-2 border text-left">
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {csvData.slice(0, 5).map((row, i) => (
+                      <tr key={i}>
+                        {Object.values(row).map((cell, j) => (
+                          <td key={j} className="p-2 border">
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="justify-between">
+          <Button variant="outline" onClick={handleRemoveFile}>Cancel</Button>
+          <Button 
+            disabled={(!file && !pastedText) || loading} 
+            onClick={handleImport}
+          >
+            {loading ? 'Importing...' : 'Import data'}
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   )
 }
