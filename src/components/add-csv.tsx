@@ -27,8 +27,8 @@ export default function CSVUpload() {
   // Create Supabase client with Clerk token
   const createClerkSupabaseClient = () => {
     return createClient(
-      'https://aemmtphwxgednzbtlgcc.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlbW10cGh3eGdlZG56YnRsZ2NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI0NDI4ODQsImV4cCI6MjA0ODAxODg4NH0.5Goe_WKejX0nxIE-q_YZd2UVU-VkHMgu1FqgQ5w9ijU',
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         global: {
           fetch: async (url, options = {}) => {

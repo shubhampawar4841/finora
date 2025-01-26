@@ -22,17 +22,17 @@ export default function Dashboard() {
           <>
             <div className="max-h-screen overflow-y-auto bg-gray-50 p-8">
               <div className="mx-auto max-w-7xl">
-                <h1 className="text-4xl font-bold mb-8">Hi {user.firstName}!</h1>
-                <p className="text-gray-500 mb-8">Your business at a glance</p>
+                <h1 className="text-4xl font-bold mb-4">Hi {user.firstName}!</h1>
+                <p className="text-gray-500 mb-4">Your business at a glance</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                   <ActiveClientsChart data={activeClientsData} total={865} />
                   <ComplianceScoreChart score={58} areas={complianceAreas} />
                 </div>
 
                 <FilterBar />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
                   <RevenueChart data={revenueData} total={23345} percentageChange={2.4} />
                   <EmployeeTargetsChart data={employeeTargetsData} totalPercentage={82} percentageChange={0.4} />
                   <TradeAccuracyChart percentage={42} completedTrades={38} percentageChange={2.4} />
