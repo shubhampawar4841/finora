@@ -1,6 +1,6 @@
 export interface Client {
     client_id: number;
-    name: string;
+    name:string;
     email: string;
     phone: string;
     kyc_status: "verified" | "pending" | "rejected";

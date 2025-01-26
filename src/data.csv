@@ -1,0 +1,21 @@
+id,user_id,full_name,email,sebi_license_number,whatsapp_number,profile_description,created_at,updated_at
+1,user_1,John Doe,john.doe@example.com,IN/123456,9876543210,"Experienced financial advisor specializing in mutual funds and ETFs.",2023-11-23 10:30:00+0530,2023-11-23 10:30:00+0530
+2,user_2,Jane Smith,jane.smith@example.com,IN/789012,9876543211,"Passionate about helping clients achieve their financial goals.",2023-11-23 11:00:00+0530,2023-11-23 11:00:00+0530
+3,user_3,David Lee,david.lee@example.com,IN/345678,9876543212,"Specializes in portfolio management and risk assessment.",2023-11-23 11:30:00+0530,2023-11-23 11:30:00+0530
+4,user_4,Sarah Jones,sarah.jones@example.com,IN/901234,9876543213,"Focuses on long-term investment strategies for retirement planning.",2023-11-23 12:00:00+0530,2023-11-23 12:00:00+0530
+5,user_5,Michael Brown,michael.brown@example.com,IN/567890,9876543214,"Provides personalized financial advice tailored to individual needs.",2023-11-23 12:30:00+0530,2023-11-23 12:30:00+0530
+6,user_6,Emily Davis,emily.davis@example.com,IN/123656,9876543215,"Experienced in wealth management and estate planning.",2023-11-23 13:00:00+0530,2023-11-23 13:00:00+0530
+7,user_7,Daniel Clark,daniel.clark@example.com,IN/789032,9876543216,"Specializes in investment options for small businesses.",2023-11-23 13:30:00+0530,2023-11-23 13:30:00+0530
+8,user_8,Olivia Taylor,olivia.taylor@example.com,IN/345278,9876543217,"Provides guidance on tax planning and investment strategies.",2023-11-23 14:00:00+0530,2023-11-23 14:00:00+0530
+9,user_9,James Wilson,james.wilson@example.com,IN/901034,9876543218,"Specializes in fixed income investments and bonds.",2023-11-23 14:30:00+0530,2023-11-23 14:30:00+0530
+10,user_10,Chloe Young,chloe.young@example.com,IN/567893,9876543219,"Experienced in managing investment portfolios for high-net-worth individuals.",2023-11-23 15:00:00+0530,2023-11-23 15:00:00+0530
+11,user_11,Alex Turner,alex.turner@example.com,IN/111222,9876543220,"Specializes in alternative investments and hedge funds.",2023-11-23 15:30:00+0530,2023-11-23 15:30:00+0530
+12,user_12,Ben Miller,ben.miller@example.com,IN/333444,9876543221,"Provides guidance on cryptocurrency and blockchain investments.",2023-11-23 16:00:00+0530,2023-11-23 16:00:00+0530
+13,user_13,Charlie Brown,charlie.brown@example.com,IN/555666,9876543222,"Experienced in ESG investing and sustainable finance.",2023-11-23 16:30:00+0530,2023-11-23 16:30:00+0530
+14,user_14,Daisy Jones,daisy.jones@example.com,IN/777888,9876543223,"Specializes in real estate investment and property management.",2023-11-23 17:00:00+0530,2023-11-23 17:00:00+0530
+15,user_15,Ethan Hunt,ethan.hunt@example.com,IN/999000,9876543224,"Provides financial education and workshops for individuals.",2023-11-23 17:30:00+0530,2023-11-23 17:30:00+0530
+16,user_16,Fiona Webb,fiona.webb@example.com,IN/222111,9876543225,"Focuses on international investment opportunities.",2023-11-23 18:00:00+0530,2023-11-23 18:00:00+0530
+17,user_17,George Lucas,george.lucas@example.com,IN/444333,9876543226,"Specializes in impact investing and social responsibility.",2023-11-23 18:30:00+0530,2023-11-23 18:30:00+0530
+18,user_18,Hannah Baker,hannah.baker@example.com,IN/666555,9876543227,"Provides comprehensive wealth management solutions.",2023-11-23 19:00:00+0530,2023-11-23 19:00:00+0530
+19,user_19,Isaac Newton,isaac.newton@example.com,IN/888777,9876543228,"Specializes in derivatives and options trading.",2023-11-23 19:30:00+0530,2023-11-23 19:30:00+0530
+20,user_20,James Bond,james.bond@example.com,IN/000111,9876543229,"Provides financial planning for high-net-worth individuals.",2023-11-23 20:00:00+0530,2023-11-23 20:00:00+0530

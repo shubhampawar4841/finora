@@ -3,7 +3,7 @@ import { Client } from './types'
 export const dummyClients: Client[] = [
   {
     client_id: 1,
-    name: "Very long user name that needs truncation",
+    name: "Veer",
     email: "user1@example.com",
     phone: "+1234567890",
     kyc_status: "verified",
@@ -694,4 +694,41 @@ export const relationshipManagers = [
 
 export const riskProfiles = ["Aggressive", "Conservative"]
 export const plans = ["Elite", "Lite","Standard"]
+
+export const activeClientsData = [
+  { name: "Plan A", value: 400, color: "#7048e8" },
+  { name: "Plan B", value: 300, color: "#9775fa" },
+  { name: "Plan C", value: 165, color: "#d0bfff" },
+]
+
+export const complianceAreas = [
+  { id: 1, title: "Compliance area #1", description: "Explanation of what the area is all about", checked: true },
+  { id: 2, title: "Compliance area #2", description: "Explanation of what the area is all about", checked: false },
+  { id: 3, title: "Compliance area #3", description: "Explanation of what the area is all about", checked: true },
+  { id: 4, title: "Compliance area #4", description: "Explanation of what the area is all about", checked: false },
+  { id: 5, title: "Compliance area #5", description: "Explanation of what the area is all about", checked: true },
+]
+
+export const revenueData = Array.from({ length: 31 }, (_, i) => ({
+  date: `${i + 1}`,
+  value: Math.floor(Math.random() * 1000) + 500,
+}))
+
+export const employeeTargetsData = [
+  { name: "Amol", value: 122779, max: 150000 },
+  { name: "Neeraj", value: 82779, max: 100000 },
+  { name: "Kuldeep", value: 72129, max: 100000 },
+  { name: "Tousif", value: 70109, max: 100000 },
+  { name: "Inder", value: 10449, max: 50000 },
+  { name: "Jay", value: 5000, max: 50000 },
+  { name: "Maya", value: 120000, max: 120000 },
+  { name: "Ravi", value: 120000, max: 130000 },
+  { name: "Sita", value: 60000, max: 80000 },
+  { name: "Karan", value: 45000, max: 70000 },
+]
+
+export const clientAcquisitionData = Array.from({ length: 31 }, (_, i) => ({
+  date: `${i + 1}`,
+  value: Math.floor(Math.random() * 10) + 1,
+}))
 
