@@ -15,7 +15,9 @@ export default function RootLayout({
     <ClerkProvider
     appearance={{
       baseTheme: shadesOfPurple,
-    }}>
+    }}
+    afterSignOutUrl="/"
+    >
       <html lang="en">
         <body className={inter.className}>
           {children}
