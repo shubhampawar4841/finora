@@ -3,11 +3,8 @@
 import React, { useState, useCallback } from 'react'
 import { useUser, useSession } from '@clerk/nextjs'
 import { createClient } from '@supabase/supabase-js'
-import Papa from 'papaparse'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Loader2, Upload, X, FileText, AlertCircle } from 'lucide-react'
+import { Upload, X, FileText, AlertCircle } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -31,9 +28,9 @@ export default function CSVUpload() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         global: {
-          fetch: async (url, options = {}) => {
+          fetch: async (url: string, options: RequestInit = {}) => {
             const clerkToken = await session?.getToken({ template: 'supabase' })
-            const headers = new Headers(options?.headers || {})
+            const headers = new Headers(options.headers || {})
             headers.set('Authorization', `Bearer ${clerkToken}`)
             return fetch(url, { ...options, headers })
           },
@@ -116,7 +113,7 @@ export default function CSVUpload() {
                   <div>
                     <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                     <p className="text-sm text-gray-600 mb-2">
-                      Drag and drop, or <button className="text-blue-500 hover:text-blue-600" onClick={() => document.querySelector('input[type="file"]').click()}>browse</button> your files
+                      Drag and drop, or <button className="text-blue-500 hover:text-blue-600" onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}>browse</button> your files
                     </p>
                     <input
                       type="file"
