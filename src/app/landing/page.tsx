@@ -1,16 +1,13 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useClerk, SignInButton, useUser } from '@clerk/nextjs'
+import { useClerk, useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ChevronRight, BarChart2, MessageCircle, Users, Database, Bot } from 'lucide-react'
+import {  BarChart2, MessageCircle, Users, Database, Bot } from 'lucide-react'
 import { Waitlist } from '@clerk/nextjs'
 
 export default function LandingPage() {
   const { user } = useUser()
-  const [email, setEmail] = useState('')
   const { openSignIn } = useClerk()
 
   const fadeIn = {

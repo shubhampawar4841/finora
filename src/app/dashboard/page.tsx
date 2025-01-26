@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { useUser, UserButton } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 import { FilterProvider } from "@/contexts/filter-context"
 import { FilterBar } from '@/components/ui/filter-bar';
 import { ActiveClientsChart } from "@/components/charts/active-clients-chart"
