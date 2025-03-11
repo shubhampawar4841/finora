@@ -31,24 +31,24 @@ export default function CSVUpload() {
   }
 
   // Create Supabase client with Clerk token
-  const createClerkSupabaseClient = () => {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          fetch: async (url: string, options: RequestInit = {}) => {
-            const clerkToken = await session?.getToken({ template: 'supabase' })
-            const headers = new Headers(options.headers || {})
-            headers.set('Authorization', `Bearer ${clerkToken}`)
-            return fetch(url, { ...options, headers })
-          },
-        },
-      }
-    )
-  }
+  // const createClerkSupabaseClient = () => {
+  //   return createClient(
+  //     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  //     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  //     {
+  //       global: {
+  //         fetch: async (url: string, options: RequestInit = {}) => {
+  //           const clerkToken = await session?.getToken({ template: 'supabase' })
+  //           const headers = new Headers(options.headers || {})
+  //           headers.set('Authorization', `Bearer ${clerkToken}`)
+  //           return fetch(url, { ...options, headers })
+  //         },
+  //       },
+  //     }
+  //   )
+  // }
 
-  const supabase = createClerkSupabaseClient()
+  // const supabase = createClerkSupabaseClient()
 
   const validateCSV = (csvText: string) => {
     Papa.parse(csvText, {
@@ -284,7 +284,7 @@ export default function CSVUpload() {
             </Alert>
           )}
 
-          {previewVisible && csvData.length > 0 && (
+          {/* {previewVisible && csvData.length > 0 && (
             <div className="mt-6">
               <h3 className="text-lg font-medium mb-4">Preview</h3>
               <div className="overflow-x-auto">
@@ -317,7 +317,7 @@ export default function CSVUpload() {
                 </p>
               )}
             </div>
-          )}
+          )} */}
         </CardContent>
         <CardFooter className="justify-between">
           <Button variant="outline" onClick={handleRemoveFile}>Cancel</Button>
