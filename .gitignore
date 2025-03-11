@@ -9,7 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-.clerk/.tmp/keyless.json
+/.clerk/.tmp/keyless.json
 # testing
 /coverage
 
