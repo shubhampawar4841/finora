@@ -284,7 +284,6 @@ export default function CSVUpload() {
             </Alert>
           )}
 
-          {/* {previewVisible && csvData.length > 0 && (
           {previewVisible && csvData.length > 0 && (
             <div className="mt-6">
               <h3 className="text-lg font-medium mb-4">Preview</h3>
