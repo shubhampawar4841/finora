@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
-import { supabase } from "@/utils/supabaseClient";
 import { useUser, useSession } from '@clerk/nextjs';
 import { createClient } from "@supabase/supabase-js";
 
@@ -28,41 +27,43 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
     ...initialData,
   });
 
-
-  const { session } = useSession()
-  const {user} = useUser()
-  // Create a custom supabase client that injects the Clerk Supabase token into the request headers
-  function createClerkSupabaseClient() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          // Get the custom Supabase token from Clerk
-          fetch: async (url, options = {}) => {
-            const clerkToken = await session?.getToken({
-              template: 'supabase',
-            })
-
-            // Insert the Clerk Supabase token into the headers
-            const headers = new Headers(options?.headers)
-            headers.set('Authorization', `Bearer ${clerkToken}`)
-
-            // Call the default fetch
-            return fetch(url, {
-              ...options,
-              headers,
-            })
-          },
-        },
-      },
-    )
-  }
-
-  // Create a `client` object for accessing Supabase data using the Clerk token
-  const client = createClerkSupabaseClient()
+  const { session } = useSession();
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUser();
+
+  // ✅ Create a custom Supabase client with Clerk token
+  const createClerkSupabaseClient = async () => {
+    if (!session) {
+      console.error("No session found, Supabase client not initialized.");
+      return null;
+    }
+
+    try {
+      const token = await session.getToken({ template: "supabase" });
+      console.log("Supabase token:", token); // Debugging
+
+      if (!token) {
+        console.error("Token is undefined");
+        return null;
+      }
+
+      return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error fetching token:", error);
+      return null;
+    }
+  };
 
   // ✅ Validation function
   const validateForm = () => {
@@ -89,7 +90,14 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
     if (!validateForm()) return;
 
     setIsLoading(true);
+
     try {
+      // Initialize Supabase client
+      const client = await createClerkSupabaseClient();
+      if (!client) {
+        throw new Error("Supabase client not initialized.");
+      }
+
       // 🔎 First, check if the email already exists
       const { data: existingClient, error: fetchError } = await client
         .from("client3")
@@ -115,7 +123,7 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
         if (insertError.code === "23505") {
           setErrors((prev) => ({ ...prev, email: "Email already exists!" }));
         } else {
-          alert("An error occurred while saving the client. Please try again.");
+          setErrors((prev) => ({ ...prev, general: "An error occurred while saving the client. Please try again." }));
         }
         throw insertError;
       }
@@ -244,6 +252,11 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
               onChange={(e) => handleChange("created_at", e.target.value)}
             />
           </div>
+          {errors.general && (
+            <Alert variant="destructive">
+              <AlertDescription>{errors.general}</AlertDescription>
+            </Alert>
+          )}
         </form>
       </CardContent>
 
