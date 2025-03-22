@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { supabase } from "@/utils/supabaseClient";
 import { useUser, useSession } from '@clerk/nextjs';
@@ -25,12 +25,23 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
     ekyc_status: "pending",
     plan: "standard",
     created_at: new Date().toISOString(),
+    user_id: "", // Add user_id field
     ...initialData,
   });
 
+  const { session } = useSession();
+  const { user } = useUser();
 
-  const { session } = useSession()
-  const {user} = useUser()
+  // Set user_id when the user is available
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        user_id: user.id, // Set the Clerk user ID
+      }));
+    }
+  }, [user]);
+
   // Create a custom supabase client that injects the Clerk Supabase token into the request headers
   function createClerkSupabaseClient() {
     return createClient(
@@ -42,25 +53,25 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
           fetch: async (url, options = {}) => {
             const clerkToken = await session?.getToken({
               template: 'supabase',
-            })
+            });
 
             // Insert the Clerk Supabase token into the headers
-            const headers = new Headers(options?.headers)
-            headers.set('Authorization', `Bearer ${clerkToken}`)
+            const headers = new Headers(options?.headers);
+            headers.set('Authorization', `Bearer ${clerkToken}`);
 
             // Call the default fetch
             return fetch(url, {
               ...options,
               headers,
-            })
+            });
           },
         },
       },
-    )
+    );
   }
 
   // Create a `client` object for accessing Supabase data using the Clerk token
-  const client = createClerkSupabaseClient()
+  const client = createClerkSupabaseClient();
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -87,7 +98,7 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+  
     setIsLoading(true);
     try {
       // 🔎 First, check if the email already exists
@@ -96,21 +107,22 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
         .select("email")
         .eq("email", formData.email)
         .single();
-
+  
       if (fetchError && fetchError.code !== "PGRST116") {
         throw fetchError;
       }
-
+  
       if (existingClient) {
         // If email exists, show error and prevent duplicate entry
         setErrors((prev) => ({ ...prev, email: "Email already exists!" }));
         setIsLoading(false);
         return;
       }
-
+  
       // 🚀 Insert new client if email is unique
-      const { error: insertError } = await client.from("client3").insert([formData]);
-
+      const { error: insertError } = await client
+        .from("client3")
+        .insert([{ ...formData, user_id: String(user.id) }]); // Ensure user_id is treated as TEXT  
       if (insertError) {
         if (insertError.code === "23505") {
           setErrors((prev) => ({ ...prev, email: "Email already exists!" }));
@@ -119,7 +131,7 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
         }
         throw insertError;
       }
-
+  
       alert("Client saved successfully!");
       onCancel(); // Close form/modal
     } catch (error) {
