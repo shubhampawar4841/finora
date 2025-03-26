@@ -23,6 +23,7 @@ import { useSession, useUser } from '@clerk/nextjs';
 import { createClient } from "@supabase/supabase-js";
 
 // Helper function to create Supabase client with Clerk token
+// Helper function to create Supabase client with Clerk token
 const createClerkSupabaseClient = async (session) => {
   if (!session) {
     console.error('Session is not available');
@@ -30,9 +31,7 @@ const createClerkSupabaseClient = async (session) => {
   }
 
   try {
-    console.log('Fetching token...');
     const token = await session.getToken({ template: 'supabase' });
-    console.log('Supabase token:', token); // Log the resolved token
 
     if (!token) {
       console.error('Token is undefined');
@@ -51,10 +50,11 @@ const createClerkSupabaseClient = async (session) => {
       }
     );
   } catch (error) {
-    console.error('Error fetching token:', error);
+    console.error('Error creating Supabase client:', error);
     return null;
   }
 };
+
 
 export default function ClientTable() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -80,33 +80,30 @@ export default function ClientTable() {
   const plans = ["Plan A", "Plan B", "Plan C"];
   const riskProfiles = ["Low Risk", "Medium Risk", "High Risk"];
 
-  useEffect(() => {
-    if (isLoaded && session) {
-      console.log('Session is available:', session);
-
-      // Initialize Supabase client
-      const initializeSupabaseClient = async () => {
-        const client = await createClerkSupabaseClient(session);
-        if (client) {
-          setSupabaseClient(client);
-          fetchClients(client);
-        }
-      };
-
-      initializeSupabaseClient();
-    } else {
-      console.log('Session not available or still loading');
-    }
-  }, [isLoaded, session]);
+    useEffect(() => {
+      if (isLoaded && session) {
+        console.log('Session is available:', session);
+    
+        // Initialize Supabase client
+        const initializeSupabaseClient = async () => {
+          const client = await createClerkSupabaseClient(session);
+          if (client) {
+            setSupabaseClient(client);
+            fetchClients(client);
+          }
+        };
+    
+        initializeSupabaseClient();
+      } else {
+        console.log('Session not available or still loading');
+      }
+    }, [isLoaded, session]);
 
   const fetchClients = async (client) => {
     setLoading(true);
     setError('');
     
     try {
-      console.log("User ID type:", typeof user.id, "Value:", user.id);
-      
-      // Use explicit parameter binding instead of direct value insertion
       const { data, error } = await client
         .from('client3')
         .select('*')
@@ -159,26 +156,26 @@ export default function ClientTable() {
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
     setError('');
-
+  
     try {
       if (existingClient) {
         const { data, error } = await supabaseClient
           .from('client3')
           .update(formData)
           .eq('id', existingClient.id);
-
+  
         if (error) throw error;
-
+  
         await fetchClients(supabaseClient);
       } else {
         const { data, error } = await supabaseClient
           .from('client3')
-          .insert([{ ...formData, user_id: String(user.id) }]); // Ensure user_id is treated as TEXT
+  .insert([{ ...formData, user_id: String(user.id) }]);
         if (error) throw error;
-
+  
         await fetchClients(supabaseClient);
       }
-
+  
       setShowAddClientDialog(false);
       setExistingClient(null);
     } catch (err) {
