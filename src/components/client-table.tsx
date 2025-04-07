@@ -20,41 +20,7 @@ import ClientForm from "./add-client";
 import CSVUpload from "@/components/add-csv";
 import { Client } from "../lib/types";
 import { useSession, useUser } from '@clerk/nextjs';
-import { createClient } from "@supabase/supabase-js";
-
-// Helper function to create Supabase client with Clerk token
-// Helper function to create Supabase client with Clerk token
-const createClerkSupabaseClient = async (session) => {
-  if (!session) {
-    console.error('Session is not available');
-    return null;
-  }
-
-  try {
-    const token = await session.getToken({ template: 'supabase' });
-
-    if (!token) {
-      console.error('Token is undefined');
-      return null;
-    }
-
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      }
-    );
-  } catch (error) {
-    console.error('Error creating Supabase client:', error);
-    return null;
-  }
-};
-
+import { createClerkSupabaseClient, SupabaseClient } from "@/utils/supabaseClient";
 
 export default function ClientTable() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -71,33 +37,27 @@ export default function ClientTable() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [existingClient, setExistingClient] = useState<Client | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [supabaseClient, setSupabaseClient] = useState(null);
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null);
 
   const { session, isLoaded } = useSession();
   const { user } = useUser();
-  console.log('Session:', session);
 
   const plans = ["Plan A", "Plan B", "Plan C"];
   const riskProfiles = ["Low Risk", "Medium Risk", "High Risk"];
+  
 
-    useEffect(() => {
-      if (isLoaded && session) {
-        console.log('Session is available:', session);
-    
-        // Initialize Supabase client
-        const initializeSupabaseClient = async () => {
-          const client = await createClerkSupabaseClient(session);
-          if (client) {
-            setSupabaseClient(client);
-            fetchClients(client);
-          }
-        };
-    
-        initializeSupabaseClient();
-      } else {
-        console.log('Session not available or still loading');
-      }
-    }, [isLoaded, session]);
+  useEffect(() => {
+    if (isLoaded && session) {
+      const initializeSupabaseClient = async () => {
+        const client = await createClerkSupabaseClient(session);
+        if (client) {
+          setSupabaseClient(client);
+          fetchClients(client);
+        }
+      };
+      initializeSupabaseClient();
+    }
+  }, [isLoaded, session]);
 
   const fetchClients = async (client) => {
     setLoading(true);

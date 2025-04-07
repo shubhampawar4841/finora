@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
-import { supabase } from "@/utils/supabaseClient";
 import { useUser, useSession } from '@clerk/nextjs';
-import { createClient } from "@supabase/supabase-js";
-
+import { createClerkSupabaseClient } from "@/utils/supabaseClient";
 import {
   Card, CardContent, CardFooter, CardHeader, CardTitle,
 } from "@/components/ui/card";
@@ -42,36 +40,7 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
     }
   }, [user]);
 
-  // Create a custom supabase client that injects the Clerk Supabase token into the request headers
-  function createClerkSupabaseClient() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          // Get the custom Supabase token from Clerk
-          fetch: async (url, options = {}) => {
-            const clerkToken = await session?.getToken({
-              template: 'supabase',
-            });
-
-            // Insert the Clerk Supabase token into the headers
-            const headers = new Headers(options?.headers);
-            headers.set('Authorization', `Bearer ${clerkToken}`);
-
-            // Call the default fetch
-            return fetch(url, {
-              ...options,
-              headers,
-            });
-          },
-        },
-      },
-    );
-  }
-
-  // Create a `client` object for accessing Supabase data using the Clerk token
-  const client = createClerkSupabaseClient();
+  
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -102,6 +71,8 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
     setIsLoading(true);
     try {
       // 🔎 First, check if the email already exists
+      const client = await createClerkSupabaseClient(session);
+      
       const { data: existingClient, error: fetchError } = await client
         .from("client3")
         .select("email")
