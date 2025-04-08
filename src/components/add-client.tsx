@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { useUser, useSession } from '@clerk/nextjs';
-import { createClient } from "@supabase/supabase-js";
-
+import { createClerkSupabaseClient } from "@/utils/supabaseClient";
 import {
   Card, CardContent, CardFooter, CardHeader, CardTitle,
 } from "@/components/ui/card";
@@ -24,46 +23,26 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
     ekyc_status: "pending",
     plan: "standard",
     created_at: new Date().toISOString(),
+    user_id: "", // Add user_id field
     ...initialData,
   });
 
   const { session } = useSession();
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
 
-  // ✅ Create a custom Supabase client with Clerk token
-  const createClerkSupabaseClient = async () => {
-    if (!session) {
-      console.error("No session found, Supabase client not initialized.");
-      return null;
+  // Set user_id when the user is available
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        user_id: user.id, // Set the Clerk user ID
+      }));
     }
+  }, [user]);
 
-    try {
-      const token = await session.getToken({ template: "supabase" });
-      console.log("Supabase token:", token); // Debugging
-
-      if (!token) {
-        console.error("Token is undefined");
-        return null;
-      }
-
-      return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          global: {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        }
-      );
-    } catch (error) {
-      console.error("Error fetching token:", error);
-      return null;
-    }
-  };
+  
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   // ✅ Validation function
   const validateForm = () => {
@@ -88,46 +67,42 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+  
     setIsLoading(true);
-
     try {
-      // Initialize Supabase client
-      const client = await createClerkSupabaseClient();
-      if (!client) {
-        throw new Error("Supabase client not initialized.");
-      }
-
       // 🔎 First, check if the email already exists
+      const client = await createClerkSupabaseClient(session);
+      
       const { data: existingClient, error: fetchError } = await client
         .from("client3")
         .select("email")
         .eq("email", formData.email)
         .single();
-
+  
       if (fetchError && fetchError.code !== "PGRST116") {
         throw fetchError;
       }
-
+  
       if (existingClient) {
         // If email exists, show error and prevent duplicate entry
         setErrors((prev) => ({ ...prev, email: "Email already exists!" }));
         setIsLoading(false);
         return;
       }
-
+  
       // 🚀 Insert new client if email is unique
-      const { error: insertError } = await client.from("client3").insert([formData]);
-
+      const { error: insertError } = await client
+        .from("client3")
+        .insert([{ ...formData, user_id: String(user.id) }]); // Ensure user_id is treated as TEXT  
       if (insertError) {
         if (insertError.code === "23505") {
           setErrors((prev) => ({ ...prev, email: "Email already exists!" }));
         } else {
-          setErrors((prev) => ({ ...prev, general: "An error occurred while saving the client. Please try again." }));
+          alert("An error occurred while saving the client. Please try again.");
         }
         throw insertError;
       }
-
+  
       alert("Client saved successfully!");
       onCancel(); // Close form/modal
     } catch (error) {
@@ -252,11 +227,6 @@ const ClientForm = ({ initialData = {}, onCancel, mode = "create" }) => {
               onChange={(e) => handleChange("created_at", e.target.value)}
             />
           </div>
-          {errors.general && (
-            <Alert variant="destructive">
-              <AlertDescription>{errors.general}</AlertDescription>
-            </Alert>
-          )}
         </form>
       </CardContent>
 

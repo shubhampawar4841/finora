@@ -19,42 +19,8 @@ import ClientSidePanel from "./clientsidepanel";
 import ClientForm from "./add-client";
 import CSVUpload from "@/components/add-csv";
 import { Client } from "../lib/types";
-import { useSession } from '@clerk/nextjs';
-import { createClient } from "@supabase/supabase-js";
-
-// Helper function to create Supabase client with Clerk token
-const createClerkSupabaseClient = async (session) => {
-  if (!session) {
-    console.error('Session is not available');
-    return null;
-  }
-
-  try {
-    console.log('Fetching token...');
-    const token = await session.getToken({ template: 'supabase' });
-    console.log('Supabase token:', token); // Log the resolved token
-
-    if (!token) {
-      console.error('Token is undefined');
-      return null;
-    }
-
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      }
-    );
-  } catch (error) {
-    console.error('Error fetching token:', error);
-    return null;
-  }
-};
+import { useSession, useUser } from '@clerk/nextjs';
+import { createClerkSupabaseClient, SupabaseClient } from "@/utils/supabaseClient";
 
 export default function ClientTable() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -71,19 +37,17 @@ export default function ClientTable() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [existingClient, setExistingClient] = useState<Client | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [supabaseClient, setSupabaseClient] = useState(null);
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null);
 
   const { session, isLoaded } = useSession();
-  console.log('Session:', session);
+  const { user } = useUser();
 
   const plans = ["Plan A", "Plan B", "Plan C"];
   const riskProfiles = ["Low Risk", "Medium Risk", "High Risk"];
+  
 
   useEffect(() => {
     if (isLoaded && session) {
-      console.log('Session is available:', session);
-
-      // Initialize Supabase client
       const initializeSupabaseClient = async () => {
         const client = await createClerkSupabaseClient(session);
         if (client) {
@@ -91,24 +55,22 @@ export default function ClientTable() {
           fetchClients(client);
         }
       };
-
       initializeSupabaseClient();
-    } else {
-      console.log('Session not available or still loading');
     }
   }, [isLoaded, session]);
 
   const fetchClients = async (client) => {
     setLoading(true);
     setError('');
-
+    
     try {
       const { data, error } = await client
         .from('client3')
-        .select('*');
-
+        .select('*')
+        .filter('user_id', 'eq', user.id.toString());
+      
       if (error) throw error;
-
+      
       setClients(data || []);
     } catch (err) {
       setError(`Error fetching clients: ${err.message}`);
@@ -118,23 +80,29 @@ export default function ClientTable() {
     }
   };
 
-  const handleDeleteClient = async (id) => {
+  const handleDeleteClient = async (id: string) => {
+    if (!supabaseClient) {
+      setError('Supabase client is not initialized');
+      return;
+    }
+  
     if (!window.confirm('Are you sure you want to delete this client?')) return;
-
+  
     try {
       const { error } = await supabaseClient
         .from('client3')
         .delete()
-        .eq('id', id);
-
+        .eq('id', id); // Ensure 'id' is the correct type stored in the database
+  
       if (error) throw error;
-
+  
       await fetchClients(supabaseClient);
     } catch (err) {
       setError(`Error deleting client: ${err.message}`);
       console.error('Error deleting client:', err);
     }
   };
+  
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -148,27 +116,26 @@ export default function ClientTable() {
   const handleSubmit = async (formData) => {
     setIsSubmitting(true);
     setError('');
-
+  
     try {
       if (existingClient) {
         const { data, error } = await supabaseClient
           .from('client3')
           .update(formData)
           .eq('id', existingClient.id);
-
+  
         if (error) throw error;
-
+  
         await fetchClients(supabaseClient);
       } else {
         const { data, error } = await supabaseClient
           .from('client3')
-          .insert([formData]);
-
+  .insert([{ ...formData, user_id: String(user.id) }]);
         if (error) throw error;
-
+  
         await fetchClients(supabaseClient);
       }
-
+  
       setShowAddClientDialog(false);
       setExistingClient(null);
     } catch (err) {

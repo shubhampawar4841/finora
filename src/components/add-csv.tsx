@@ -9,6 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUser, useSession } from '@clerk/nextjs'
+import { createClerkSupabaseClient } from '@/utils/supabaseClient';
 
 import Papa from 'papaparse';
 
@@ -22,11 +23,6 @@ export default function CSVUpload() {
   const [previewVisible, setPreviewVisible] = useState(false);
   const { toast } = useToast();
 
-  // Supabase client (no Clerk authentication)
-  // const supabase = createClient(
-  //   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  //   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  // );
 
   // Define required columns and allowed values
   const requiredColumns = ['name', 'email', 'whatsapp', 'assigned_rn', 'risk', 'ekyc_status', 'plan'];
@@ -41,33 +37,7 @@ export default function CSVUpload() {
   const { session } = useSession()
 
   // Create a custom supabase client that injects the Clerk Supabase token into the request headers
-  function createClerkSupabaseClient() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          // Get the custom Supabase token from Clerk
-          fetch: async (url, options = {}) => {
-            const clerkToken = await session?.getToken({
-              template: 'supabase',
-            })
-
-            // Insert the Clerk Supabase token into the headers
-            const headers = new Headers(options?.headers)
-            headers.set('Authorization', `Bearer ${clerkToken}`)
-
-            // Call the default fetch
-            return fetch(url, {
-              ...options,
-              headers,
-            })
-          },
-        },
-      },
-    )
-  }
-
+  
   // Validate CSV data
   const validateCSV = (csvText: string) => {
     Papa.parse(csvText, {
@@ -196,47 +166,64 @@ export default function CSVUpload() {
   };
 
   // Handle data import
-  const handleImport = async () => {
-    if (!validated) {
-      toast({
-        title: "Validation Required",
-        description: "Please ensure the data is valid before importing.",
-        variant: "destructive"
-      });
-      return;
+  // Handle data import - UPDATED VERSION
+const handleImport = async () => {
+  if (!validated || !user) {
+    toast({
+      title: "Validation Required",
+      description: "Please ensure the data is valid and you're logged in before importing.",
+      variant: "destructive"
+    });
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const client = await createClerkSupabaseClient(session);
+    
+    // Prepare data with consistent formatting
+    const formattedData = csvData.map(row => ({
+      name: row.name || '',
+      email: row.email?.toLowerCase() || '', // normalize email
+      whatsapp: row.whatsapp || '',
+      assigned_rn: row.assigned_rn || '',
+      risk: (row.risk || '').toLowerCase(), // normalize risk
+      ekyc_status: (row.ekyc_status || 'pending').toLowerCase(), // default pending
+      plan: (row.plan || 'standard').toLowerCase(), // default standard
+      created_at: new Date().toISOString(), // current timestamp
+      user_id: user.id, // add current user ID
+      role: row.role || '', // optional field
+    }));
+
+    // Insert in batches
+    const batchSize = 100;
+    for (let i = 0; i < formattedData.length; i += batchSize) {
+      const batch = formattedData.slice(i, i + batchSize);
+      const { error } = await client
+        .from('client3')
+        .insert(batch)
+        .select(); // Return inserted rows for error checking
+
+      if (error) throw error;
     }
 
-    setLoading(true);
-    try {
-      // Insert data into Supabase in batches (e.g., 100 rows at a time)
-      const batchSize = 100;
-      for (let i = 0; i < csvData.length; i += batchSize) {
-        const batch = csvData.slice(i, i + batchSize).filter(row => row.email?.trim());
-        const { error } = await supabase
-          .from('client3')
-          .insert(batch);
-
-        if (error) throw error;
-      }
-
-      setLoading(false);
-      toast({
-        title: "Success",
-        description: "Data imported successfully!",
-      });
-
-      // Reset the form
-      handleRemoveFile();
-    } catch (err: any) {
-      setError(`Import failed: ${err.message || 'Please try again.'}`);
-      setLoading(false);
-      toast({
-        title: "Error",
-        description: "An error occurred while importing the data.",
-        variant: "destructive"
-      });
-    }
-  };
+    toast({
+      title: "Success",
+      description: `${formattedData.length} records imported successfully!`,
+    });
+    handleRemoveFile();
+  } catch (err: any) {
+    const errorMsg = err.message || 'Import failed. Please check for duplicate emails.';
+    setError(errorMsg);
+    toast({
+      title: "Error",
+      description: errorMsg,
+      variant: "destructive"
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="container mx-auto p-4">

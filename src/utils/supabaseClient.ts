@@ -1,8 +1,39 @@
+// lib/supabaseClient.ts
 import { createClient } from "@supabase/supabase-js";
+import { Session } from "@clerk/nextjs/server";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+export const createClerkSupabaseClient = async (session: Session | null) => {
+  if (!session) {
+    console.error('Session is not available');
+    return null;
+  }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  try {
+    const token = await session.getToken({ template: 'supabase' });
 
-// Function to test database connection
+    if (!token) {
+      console.error('Token is undefined');
+      return null;
+    }
+
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+        auth: {
+          persistSession: false,
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error creating Supabase client:', error);
+    return null;
+  }
+};
+
+export type SupabaseClient = ReturnType<typeof createClient>;
