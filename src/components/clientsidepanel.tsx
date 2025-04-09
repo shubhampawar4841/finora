@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,9 +56,11 @@ interface ClientSidePanelProps {
 }
 
 // TradeCard component now has access to the utility functions
-const TradeCard = ({ trade, isLast }: { trade: Trade, isLast: boolean }) => {
+export const TradeCard = ({ trade, isLast }: { trade: Trade; isLast: boolean }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const tradeData = trade.trade_data;
+
+  console.log("Rendering TradeCard for trade ID:", trade.id, trade);
 
   return (
     <div
@@ -68,12 +71,12 @@ const TradeCard = ({ trade, isLast }: { trade: Trade, isLast: boolean }) => {
       <div className="flex justify-between items-center">
         {/* Left Section (Type & Name) */}
         <div className="flex items-center gap-2 text-sm text-gray-600">
-          <span className={`font-semibold ${tradeData.tradeType === "BUY" ? "text-green-600" : "text-red-600"}`}>
-            {tradeData.tradeType}
+          <span className={`font-semibold ${tradeData?.tradeType === "BUY" ? "text-green-600" : "text-red-600"}`}>
+            {tradeData?.tradeType || "N/A"}
           </span>
-          <span className="text-gray-500">{tradeData.stock}</span>
-          <Badge variant="outline">{tradeData.segment}</Badge>
-          <Badge variant="outline">{tradeData.timeHorizon}</Badge>
+          <span className="text-gray-500">{tradeData?.stock || "Unknown Stock"}</span>
+          {tradeData?.segment && <Badge variant="outline">{tradeData.segment}</Badge>}
+          {tradeData?.timeHorizon && <Badge variant="outline">{tradeData.timeHorizon}</Badge>}
         </div>
 
         {/* Right Section (Date & Time) */}
@@ -85,51 +88,60 @@ const TradeCard = ({ trade, isLast }: { trade: Trade, isLast: boolean }) => {
 
       {/* Expanded Section */}
       {isExpanded && (
-        <div className="mt-4 p-4 border-t bg-white rounded-md shadow-sm flex gap-4">
-          <div className="w-3/4">
-            {/* Header Section */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Badge variant={tradeData.tradeType === "BUY" ? "success" : "destructive"}>
-                  {tradeData.tradeType}
-                </Badge>
-                <span className="font-bold text-lg">{tradeData.stock}</span>
-                <Badge variant="outline">{tradeData.segment}</Badge>
+        <div className="mt-4 p-4 border-t bg-white rounded-md shadow-sm flex flex-col gap-4">
+          {/* Header Section */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Badge variant={tradeData?.tradeType === "BUY" ? "success" : "destructive"}>
+                {tradeData?.tradeType || "N/A"}
+              </Badge>
+              <span className="font-bold text-lg">{tradeData?.stock || "Unknown Stock"}</span>
+              {tradeData?.segment && <Badge variant="outline">{tradeData.segment}</Badge>}
+              {tradeData?.status && (
                 <Badge variant={tradeData.status === "ACTIVE" ? "default" : "secondary"}>
                   {tradeData.status}
                 </Badge>
-              </div>
-              <button className="text-orange-500 text-sm border px-2 py-1 rounded-md hover:bg-orange-50 hover:text-orange-700 transition">
-                ⚠️ Generate rationale
-              </button>
+              )}
             </div>
+            <button className="text-orange-500 text-sm border px-2 py-1 rounded-md hover:bg-orange-50 hover:text-orange-700 transition">
+              ⚠️ Generate rationale
+            </button>
+          </div>
 
-            {/* Entry, Stoploss, and Targets */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3 text-sm text-gray-700">
-              <div>
-                <p className="flex items-center gap-1 font-medium">⏳ Entry</p>
-                <span className="text-gray-900 font-semibold">{tradeData.entry}</span>
-              </div>
-              <div>
-                <p className="flex items-center gap-1 font-medium">🚫 Stoploss</p>
-                <span className="text-gray-900 font-semibold">{tradeData.stoploss}</span>
-              </div>
-              <div>
-                <p className="flex items-center gap-1 font-medium">🚩 Target(s)</p>
-                <span className="text-gray-900 font-semibold">
-                  {tradeData.targets?.join(" » ") ?? "No targets"}
-                </span>
-              </div>
+          {/* Entry, Stoploss, and Targets */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3 text-sm text-gray-700">
+            <div>
+              <p className="flex items-center gap-1 font-medium">⏳ Entry</p>
+              <span className="text-gray-900 font-semibold">{tradeData?.entry ?? "—"}</span>
+            </div>
+            <div>
+              <p className="flex items-center gap-1 font-medium">🚫 Stoploss</p>
+              <span className="text-gray-900 font-semibold">{tradeData?.stoploss ?? "—"}</span>
+            </div>
+            <div>
+              <p className="flex items-center gap-1 font-medium">🚩 Target(s)</p>
+              <span className="text-gray-900 font-semibold">
+                {tradeData?.targets?.length > 0 ? tradeData.targets.join(" » ") : "No targets"}
+              </span>
             </div>
           </div>
 
-          <div className="w-1/4 text-zinc-800">
-            <p className="mb-2">
-              <strong>📩 Created At</strong> {formatDate(trade.created_at)}
+          {/* Date & Debug Info */}
+          <div className="mt-4 text-zinc-800 text-sm">
+            <p>
+              <strong>📩 Created At:</strong> {formatDate(trade.created_at)}
             </p>
             <p>
-              <strong>⏰ Time</strong> {formatTime(trade.created_at)}
+              <strong>⏰ Time:</strong> {formatTime(trade.created_at)}
             </p>
+
+            {/* Debug JSON Output */}
+            <details className="mt-3 bg-gray-100 p-2 rounded-md">
+              <summary className="cursor-pointer text-gray-700 font-medium">🔍 View Raw Trade JSON</summary>
+              <pre className="text-xs mt-2 text-gray-600 overflow-x-auto">
+                {JSON.stringify(trade, null, 2)}
+              </pre>
+            </details>
           </div>
         </div>
       )}
